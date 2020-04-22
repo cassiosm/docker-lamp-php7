@@ -1,0 +1,46 @@
+web:
+    image: 'php:apache'
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/var/www/html
+    links:
+      - mariadb
+      - phpmyadmin
+    environment:
+      - DOCKER_DEV=1
+      - TIMEZONE=America/Sao_Paulo
+      - PHP_EXT=pdo_mysql
+    command: |
+        sh -c 'sed -e "s/^DocumentRoot \/var\/www\/html/DocumentRoot \/var\/www\/html\/web/" -i /etc/apache2/apache2.conf \
+            && a2enmod rewrite \
+            && usermod -u `stat -c %u /var/www/html` www-data \
+            && groupmod -g `stat -c %g /var/www/html` www-data \
+            && chsh -s /bin/bash www-data \
+            && echo "date.timezone = ${TIMEZONE}" > /usr/local/etc/php/conf.d/timezone.ini \
+            && docker-php-ext-install ${PHP_EXT} \
+            && apache2-foreground'
+      
+mariadb:
+  image: mariadb:10.3.10
+  restart: always
+  volumes:
+    - ./mariadb:/var/lib/mariadb
+  environment:
+    MYSQL_ROOT_PASSWORD: pw
+    MYSQL_USERNAME: esteio
+    MYSQL_PASSWORD: esteio123
+  ports:
+    - "8889:3306"
+    
+phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  links:
+    - mariadb
+  environment:
+    - PMA_HOST=mariadb
+  ports:
+    - "8080:80"
+  volumes:
+    - /sessions

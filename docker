@@ -1,0 +1,33 @@
+web:
+    image: 'php:apache'
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/var/www/html
+    links:
+      - mariadb
+      - phpmyadmin
+      
+mariadb:
+  image: mariadb:10.3.10
+  restart: always
+  volumes:
+    - ./mariadb:/var/lib/mariadb
+  environment:
+    MYSQL_ROOT_PASSWORD: pw
+    MYSQL_USERNAME: esteio
+    MYSQL_PASSWORD: esteio123
+  ports:
+    - "8889:3306"
+    
+phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  links:
+    - mariadb
+  environment:
+    - PMA_HOST=mariadb
+  ports:
+    - "8080:80"
+  volumes:
+    - /sessions

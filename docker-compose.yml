@@ -2,7 +2,7 @@ web:
     image: 'php:apache'
     restart: always
     ports:
-      - "80:80"
+      - "8081:80"
     volumes:
       - ./html:/var/www/html
     links:
